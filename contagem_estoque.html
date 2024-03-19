@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contagem de Estoque</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: purple;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: calc(100% - 10px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="button"] {
+            padding: 10px 20px;
+            background-color: purple;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="button"]:hover {
+            background-color: #6a1b9a;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: purple;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Contagem de Estoque</h1>
+    </header>
+    <div class="container">
+        <input type="text" id="productName" placeholder="Nome do Produto">
+        <input type="number" id="productQuantity" placeholder="Quantidade">
+        <br><br>
+        <input type="button" value="Adicionar Produto" onclick="addProduct()">
+        <input type="button" value="Remover Produto" onclick="removeProduct()">
+        <input type="button" value="Listar Produtos" onclick="listProducts()">
+		 <input type="button" value="Exportar para Excel" onclick="exportToExcel()">
+        <br><br>
+        <table id="productTable">
+            <thead>
+                <tr>
+                    <th>Nome do Produto</th>
+                    <th>Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let products = [];
+
+        function addProduct() {
+            const productName = document.getElementById('productName').value.trim();
+            const productQuantity = parseInt(document.getElementById('productQuantity').value);
+            if (productName && !isNaN(productQuantity) && productQuantity > 0) {
+                const existingProductIndex = products.findIndex(p => p.name === productName);
+                if (existingProductIndex !== -1) {
+                    products[existingProductIndex].quantity += productQuantity;
+                } else {
+                    products.push({ name: productName, quantity: productQuantity });
+                }
+                updateTable();
+            } else {
+                alert('Por favor, insira um nome e uma quantidade válida para o produto.');
+            }
+        }
+
+        function removeProduct() {
+            const productName = document.getElementById('productName').value.trim();
+            const productQuantity = parseInt(document.getElementById('productQuantity').value);
+            const existingProductIndex = products.findIndex(p => p.name === productName);
+            if (existingProductIndex !== -1) {
+                if (products[existingProductIndex].quantity >= productQuantity) {
+                    products[existingProductIndex].quantity -= productQuantity;
+                    if (products[existingProductIndex].quantity === 0) {
+                        products.splice(existingProductIndex, 1);
+                    }
+                    updateTable();
+                } else {
+                    alert('Não há produtos suficientes para remover.');
+                }
+            } else {
+                alert('Produto não encontrado.');
+            }
+        }
+
+        function countProducts() {
+            alert('Total de Produtos: ' + products.length);
+        }
+
+        function listProducts() {
+            let list = '';
+            products.forEach(product => {
+                list += `${product.name}: ${product.quantity}\n`;
+            });
+            alert(list);
+        }
+
+        function updateTable() {
+            const tableBody = document.querySelector('#productTable tbody');
+            tableBody.innerHTML = '';
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${product.name}</td><td>${product.quantity}</td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function exportToExcel() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Nome do Produto,Quantidade\n";
+            products.forEach(product => {
+                csvContent += `${product.name},${product.quantity}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "estoque.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+    </script>
+</body>
+</html>
